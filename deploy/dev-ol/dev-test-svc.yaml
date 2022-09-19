@@ -19,6 +19,3 @@ spec:
     tier: backend
   sessionAffinity: None
   type: NodePort
-  
-  
-  需要做的是1.修改yaml文件，2.替换流水线中文件名称（已经部署了一个）不然就会把原来的替代掉，然后运行
