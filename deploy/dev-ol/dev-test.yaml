@@ -29,6 +29,7 @@ spec:
             - name: CACHE_PUBLIC_EXPIRATION
               value: 3d
           image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER
+          command: ["/bin/bash", "-ce", "tail -f /dev/null"]
           readinessProbe:
             httpGet:
               path: /
