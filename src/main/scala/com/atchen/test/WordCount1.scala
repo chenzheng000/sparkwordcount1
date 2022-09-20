@@ -1,42 +1,43 @@
 package com.atchen.test
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 
-object WordCount1 {
+import scala.Tuple2;
 
-  def main(args: Array[String]): Unit = {
-    
-    //1.spark配置
-    val sparkConf: SparkConf = new SparkConf().setMaster("local[*]").setAppName("wc1")
+import java.util.Arrays;
 
-    //2.spark入口
-    val sc: SparkContext = new SparkContext(sparkConf)
-    
-    //todo 业务
-    //1.一行一行的读取数据
-    //{(hello spark),(hello scala)}
-    val lines: RDD[String] = sc.textFile("datas")
-    
-    //2.对数据进行扁平化处理，打散成一个个单词
-    //{(hello spark),(hello scala)} --> {hello,spark,hello,scala}
-    val words: RDD[String] = lines.flatMap(_.split(" "))
-    
-    //3.将一个个单词映射成元组
-    val wordtoOne: RDD[(String, Int)] = words.map((_, 1))
 
-    //4.对RDD按key进行聚合
-    val wordToSum: RDD[(String, Int)] = wordtoOne.reduceByKey(_ + _)
+/**
+ * @Author yqq
+ * @Date 2021/12/06 23:16
+ * @Version 1.0
+ */
 
-    //以数组Array的形式返回数据的所有元素
-    //5.搜集数据到Driver端进行打印,慎用
-    val tuples: Array[(String, Int)] = wordToSum.collect()
-    tuples.foreach(println)
-    sc.stop()
-    
-    
-  }
-  
- 
+/**
+ * SparkScala api 与Java api 不同：
+ * 1).java中需要创建 JavaSparkContext
+ * 2).scala中是RDD ，java中是JavaRDD
+ * 3).scala中将RDD转换成K,V格式的数据直接使用 map转出tuple数据即可
+ *    Java中将RDD转换成K,V格式的数据需要使用mapToPair,转出K,V格式的数据
+ *
+ * 4).JavaPairRDD 在java中代表的是K,V格式的RDD
+ *
+ */
+public class wordcount {
+    public static void main(String[] args) {
+        SparkConf conf = new SparkConf();
+        conf.setMaster("local");
+        conf.setAppName("spark_wordcount_java");
 
+        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaRDD<String> lines = sc.textFile("datas");
+        JavaRDD<String> words = lines.flatMap(line-> Arrays.asList(line.split(" ")).iterator());
+        JavaPairRDD<String, Integer> pairRDD = words.mapToPair(word -> new Tuple2<>(word, 1));
+        JavaPairRDD<String, Integer> result = pairRDD.reduceByKey((v1, v2) -> v1 + v2);
+        result.foreach(tuple2 -> System.out.println(tuple2));
+
+    }
 }
